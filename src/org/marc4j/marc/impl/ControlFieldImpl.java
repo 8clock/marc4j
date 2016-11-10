@@ -4,8 +4,8 @@
  * This file is part of MARC4J
  *
  * MARC4J is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public 
- * License as published by the Free Software Foundation; either 
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
  * MARC4J is distributed in the hope that it will be useful,
@@ -13,87 +13,132 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public 
+ * You should have received a copy of the GNU Lesser General Public
  * License along with MARC4J; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 package org.marc4j.marc.impl;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.marc4j.Constants;
 import org.marc4j.marc.ControlField;
+import org.marc4j.marc.InvalidMARCException;
 
 /**
- * Represents a control field in a MARC record.
+ * ControlField defines behavior for a control field (tag 001-009).
+ * <p>
+ * Control fields are variable fields identified by tags beginning with two
+ * zero's. They are comprised of data and a field terminator and do not contain
+ * indicators or subfield codes. The structure of a control field according to
+ * the MARC standard is as follows:
+ * 
+ * <pre>DATA_ELEMENT FIELD_TERMINATOR</pre>
+ * </p>
  * 
  * @author Bas Peters
+ * @author Kevin S. Clarke <ksclarke@gmail.com>
  */
 public class ControlFieldImpl extends VariableFieldImpl implements ControlField {
 
-    private Long id;
-    
-    private String data;
+    private static final long serialVersionUID = 8049827626175226331L;
+
+    private String myData;
 
     /**
      * Creates a new <code>ControlField</code>.
      */
-    public ControlFieldImpl() {
+    ControlFieldImpl() {
     }
 
     /**
      * Creates a new <code>ControlField</code> and sets the tag name.
+     * 
+     * @param aTag The field tag for the <code>ControlField</code>
      */
-    public ControlFieldImpl(String tag) {
-        super(tag);
+    ControlFieldImpl(final String aTag) {
+        setTag(aTag);
     }
 
     /**
      * Creates a new <code>ControlField</code> and sets the tag name and the
      * data element.
      * 
+     * @param aTag The tag for the <code>ControlField</code>
+     * @param aData The data for the <code>ControlField</code>
      */
-    public ControlFieldImpl(String tag, String data) {
-        super(tag);
-        this.setData(data);
+    ControlFieldImpl(final String aTag, final String aData) {
+        setTag(aTag);
+        setData(aData);
     }
 
-    public void setData(String data) {
-        this.data = data;
+    /**
+     * Sets the tag of a <code>ControlField</code>.
+     * 
+     * @param aTag The tag of a <code>ControlField</code>
+     */
+    @Override
+    public void setTag(final String aTag) {
+        super.setTag(aTag);
+
+        if (!Constants.CF_TAG_PATTERN.matcher(aTag).find()) {
+            throw new InvalidMARCException(aTag +
+                    " is not a valid ControlField tag");
+        }
     }
 
+    /**
+     * Sets the {@link ControlField} data.
+     * 
+     * @param aData The data for the <code>ControlField</code>
+     */
+    @Override
+    public void setData(final String aData) {
+        myData = aData;
+    }
+
+    /**
+     * Gets the {@link ControlField} data.
+     * 
+     * @return The <code>ControlField</code>'s data
+     */
+    @Override
     public String getData() {
-        return data;
+        return myData;
     }
 
     /**
      * Returns a string representation of this control field.
-     * 
      * <p>
-     * Example:
+     * For example:
      * 
      * <pre>
      *     001 12883376
      * </pre>
+     * </p>
      * 
-     * @return String - a string representation of this control field
+     * @return A string representation of this control field
      */
+    @Override
     public String toString() {
         return super.toString() + " " + getData();
     }
 
-    public boolean find(String pattern) {
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(getData());
-        return m.find();
-    }
+    /**
+     * Finds a match to a regular expression pattern in the {@link ControlField}
+     * 's data.
+     * 
+     * @param aPattern The regular expression pattern to compare against the
+     *        <code>ControlField</code>'s data
+     */
+    @Override
+    public boolean find(final String aPattern) {
+        final Pattern pattern = Pattern.compile(aPattern);
+        final Matcher matcher = pattern.matcher(getData());
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
+        return matcher.find();
     }
 
 }
